@@ -446,13 +446,26 @@ var resizePizzas = function(size) {
 
     return dx;
   }
+  
+  // optimized students note.
+  // the problem was the selector keep calling too much inside the loop
+  // so to make efficiency call, pull out the selector
+  // so they only instantiated once, not calling in loop as many pizza will calling.
+
+  // every .randomPizzaContainer selector called the dom will re-initiated 
+  // and browser re-render it, thats why its unefficient to put inside the loop
+
+  // mentor, please correct me if my explanation is wrong. :D 
+
+  var pizzaContainer = document.querySelectorAll(".randomPizzaContainer");
+  var pizzaContainerLength = pizzaContainer.length;
+  var dx = determineDx(pizzaContainer[0], size);
+  var newwidth = (pizzaContainer[0].offsetWidth + dx) + 'px';
 
   // Iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
-    for (var i = 0; i < document.querySelectorAll(".randomPizzaContainer").length; i++) {
-      var dx = determineDx(document.querySelectorAll(".randomPizzaContainer")[i], size);
-      var newwidth = (document.querySelectorAll(".randomPizzaContainer")[i].offsetWidth + dx) + 'px';
-      document.querySelectorAll(".randomPizzaContainer")[i].style.width = newwidth;
+    for (var i = 0; i < pizzaContainerLength; i++){
+      pizzaContainer[i].style.width = newwidth;
     }
   }
 
@@ -496,14 +509,48 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 // The following code for sliding background pizzas was pulled from Ilya's demo found at:
 // https://www.igvita.com/slides/2012/devtools-tips-and-tricks/jank-demo.html
 
+// students note optimize
+// this actually same as problem above, inside for iteration updatePositions
+// the function keep asking the body position from global function/jquery function
+// to change body position on each loop so its defect on rendering
+
+// the solution were same, pull out every variable that keeping reinitiated defect performance
+// make function only update position when triggered
+
+// initiate lastest scrollY position to 0 and scrolled to true
+var knownScrollY = 0;
+var scrolled = true;
+
+// create onscroll function to bound event listener when triggered
+function onScroll(){
+  knownScrollY = window.scrollY;
+  requestIfScrolled();
+}
+
+// if it scrolled, then trigger this function
+// but doesnt initiate another
+function requestIfScrolled(){
+  if (!scrolled) {
+    requestAnimationFrame(updatePositions);
+  }
+  scrolled = true;
+}
+
 // Moves the sliding background pizzas based on scroll position
 function updatePositions() {
   frame++;
+  // update the scrolled to grab the next scroll
+  scrolled = false;
   window.performance.mark("mark_start_frame");
 
   var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+  //put out the scrollTop outside and replace it with onScroll
+  var currentScrollY = knownScrollY / 1250;
+  var phase;
+
+  //instead checking length every iteration, just check once instead
+  for (var i = 0, len = items.length; i < len; i++) {
+    var phase = Math.sin(currentScrollY + (i % 5));
     items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
@@ -518,13 +565,14 @@ function updatePositions() {
 }
 
 // runs updatePositions on scroll
-window.addEventListener('scroll', updatePositions);
+// change callback function to scroll
+window.addEventListener('scroll', onScroll);
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-  for (var i = 0; i < 200; i++) {
+  for (var i = 0; i < 35; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";

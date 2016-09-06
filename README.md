@@ -1,40 +1,28 @@
 ## Website Performance Optimization portfolio project
 
-Your challenge, if you wish to accept it (and we sure hope you will), is to optimize this online portfolio for speed! In particular, optimize the critical rendering path and make this page render as quickly as possible by applying the techniques you've picked up in the [Critical Rendering Path course](https://www.udacity.com/course/ud884).
-
-To get started, check out the repository and inspect the code.
-
-### Getting started
-
 ####Part 1: Optimize PageSpeed Insights score for index.html
+- https://kraizter.github.io/frontend-nanodegree-mobile-portfolio/
 
-Some useful tips to help you get started:
-
-1. Check out the repository
-1. To inspect the site on your phone, you can run a local server
-
-  ```bash
-  $> cd /path/to/your-project-folder
-  $> python -m SimpleHTTPServer 8080
-  ```
-
-1. Open a browser and visit localhost:8080
-1. Download and install [ngrok](https://ngrok.com/) to the top-level of your project directory to make your local server accessible remotely.
-
-  ``` bash
-  $> cd /path/to/your-project-folder
-  $> ./ngrok http 8080
-  ```
-
-1. Copy the public URL ngrok gives you and try running it through PageSpeed Insights! Optional: [More on integrating ngrok, Grunt and PageSpeed.](http://www.jamescryer.com/2014/06/12/grunt-pagespeed-and-ngrok-locally-testing/)
-
-Profile, optimize, measure... and then lather, rinse, and repeat. Good luck!
+### index.html
+* disable open-sans font which is not used (really defect alot in loading)
+* put `media print` on print.css so it not loaded on screen to increase performance
+* gzip the style.css file and inline it on header, (suggested by google page speed), this decrease page load latency. 
+* resize the image, and make the thumbnail pizza (that huge 2mb, i turn into 80kb).
 
 ####Part 2: Optimize Frames per Second in pizza.html
 
-To optimize views/pizza.html, you will need to modify views/js/main.js until your frames per second rate is 60 fps or higher. You will find instructive comments in main.js. 
+### views/js/main.js
+* the problem was the selector keep calling too much inside the loop .so to make efficiency call, pull out the selector. they only instantiated once, not calling in loop as many pizza will calling. every .randomPizzaContainer selector called the dom will re-initiated and browser re-render it, thats why its unefficient to put inside the loop
 
-You might find the FPS Counter/HUD Display useful in Chrome developer tools described here: [Chrome Dev Tools tips-and-tricks](https://developer.chrome.com/devtools/docs/tips-and-tricks).
+changing pizza position :
+* this actually same as problem above, inside for iteration updatePositions, the function keep asking the body position from global function/jquery function to change body position on each loop so its defect on rendering the solution were same, pull out every variable that keeping reinitiated defect performance make function only update position when triggered
+* also decrease the randompizza object from 300 to 30, the more to load the fps might be dropping alot.
+
+### High reference on getting solution :
+* http://jankfree.org/
+* https://discussions.udacity.com/t/help-with-pizza-images-and-how-to-find-fps/181265
+* https://discussions.udacity.com/t/i-cant-get-up-to-60-fps-on-the-pizza-scroll-please-help/182048
+* http://blog.teamtreehouse.com/create-smoother-animations-transitions-browser
 
 ### Optimization Tips and Tricks
 * [Optimizing Performance](https://developers.google.com/web/fundamentals/performance/ "web performance")
